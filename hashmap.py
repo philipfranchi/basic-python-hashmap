@@ -2,8 +2,6 @@ import logging
 from decimal import Decimal
 
 class HashMap:
-    
-
     INITIAL_STORE_SIZE = 16
     LOAD_FACTOR = 0.5 
 
@@ -22,10 +20,9 @@ class HashMap:
 
 
     def  __setitem__(self, key, value):
-        current_load_factor = Decimal(self.count) / Decimal(len(self.store))
-        if current_load_factor > HashMap.LOAD_FACTOR:
+        if self._should_resize_store():
             self._resize_store()
-
+            
         index = self._compute_index(key)
         if self.store[index] is None:
             self.count += 1
@@ -49,6 +46,21 @@ class HashMap:
     def __len__(self):
         return self.count
 
+
+    def keys(self):
+        keys = []
+        for node in self.store:
+            if node is not None:
+                key, _ = node
+                keys.append(key)
+        return keys
+
+
+    def _should_resize_store(self):
+        current_load_factor = Decimal(self.count) / Decimal(len(self.store))
+        if current_load_factor > HashMap.LOAD_FACTOR:
+            return True
+        return False
 
     def _resize_store(self):
         logging.debug("Resizing store")
@@ -75,12 +87,3 @@ class HashMap:
         # This error should be unreachable. The quadratic probe 
         # will always have enough space when load factor is 1/2
         raise KeyError("Can't find index for item")
-
-
-    def keys(self):
-        keys = []
-        for node in self.store:
-            if node is not None:
-                key, _ = node
-                keys.append(key)
-        return keys
